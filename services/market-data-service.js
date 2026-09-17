@@ -1,6 +1,6 @@
-/* Market Analysis — provider-agnostic market data adapter.
- * GitHub Pages is static, so secrets must NOT be placed in this browser file.
- * Point API_BASE at your own secure backend/proxy when ready.
+/* Market Analysis — secure browser adapter.
+ * GitHub Pages is static, so secrets must NOT be placed in this file.
+ * Set window.MARKET_API_BASE to your deployed backend URL.
  */
 (function () {
   const API_BASE = (window.MARKET_API_BASE || '').replace(/\/$/, '');
@@ -28,6 +28,13 @@
     },
     async search(query) {
       return request(`/api/companies?query=${encodeURIComponent(query)}`);
+    },
+    async ai(question, context = '') {
+      return request('/api/ai', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question, context })
+      });
     }
   };
 })();
