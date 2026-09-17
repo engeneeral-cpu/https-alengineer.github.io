@@ -1,9 +1,7 @@
-/* Generic serverless route handler for the Market Analysis AI Engine.
- * Adapt the exported handler to your deployment platform if required.
- */
+/* Serverless route handler for the Market Analysis AI Engine using Gemini. */
 
 const { runAI } = require('./ai-engine');
-const provider = require('./ai-provider-openai');
+const provider = require('./ai-provider-gemini');
 
 async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -14,16 +12,23 @@ async function handler(req, res) {
 
   try {
     const body = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {});
+    if (!body.question || typeof body.question !== 'string') {
+      res.statusCode = 400;
+      res.setHeader('Content-Type', 'application/json');
+      return res.end(JSON.stringify({ error: 'A question is required' }));
+    }
+
     const answer = await runAI({
       question: body.question,
       context: body.context || {},
       provider
     });
+
     res.statusCode = 200;
     res.setHeader('Content-Type', 'application/json');
     return res.end(JSON.stringify({ answer }));
   } catch (error) {
-    res.statusCode = 400;
+    res.statusCode = 500;
     res.setHeader('Content-Type', 'application/json');
     return res.end(JSON.stringify({ error: error.message || 'AI request failed' }));
   }
